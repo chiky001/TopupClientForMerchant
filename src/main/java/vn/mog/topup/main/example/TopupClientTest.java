@@ -39,7 +39,7 @@ public class TopupClientTest {
 			String serviceCode = "1PAY0010";
 			String requestId = String.valueOf(System.currentTimeMillis());
 			TopupTransactionResponse response = topupClient.topup(serviceCode, phoneNumber, price, requestId);
-			displayResutlTopupService(response);
+			displayResutlTopupService(response,topupClient);
 
 		} catch (InvalidKeyException e) {
 			e.printStackTrace();
@@ -62,7 +62,7 @@ public class TopupClientTest {
 		try {
 			System.out.println("--------- SOFTPIN - MUA MA THE DIEN THOAI -------- ");
 			TopupTransactionResponse response = topupClient.softpin(serviceCode, price, quantity, requestId);
-			displayResustSoftpinService(response);
+			displayResustSoftpinService(response,topupClient);
 		} catch (InvalidKeyException e) {
 			e.printStackTrace();
 		} catch (NoSuchAlgorithmException e) {
@@ -87,8 +87,8 @@ public class TopupClientTest {
 			if (response.getStatus().getCode() == 0) {
 				String sign = response.getDataSign();
 				String plainText = response.getStatus().getCode() + "|" + response.getBalance();
-				//if (SecurityUtil.verifySign(sign, plainText, DefaultTopupClient.PUBLIC_KEY)) {
-					if (1 == 3) {
+				if (SecurityUtil.verifySign(sign, plainText, ((DefaultTopupClient)topupClient).getPublicKey())) {
+				//	if (1 == 3) {
 					System.out.println(
 							"Du lieu tra ve dang nghi.");
 				}
@@ -125,7 +125,7 @@ public class TopupClientTest {
 			if (response.getStatus().getCode() == 0) {
 				String sign = response.getDataSign();
 				String plainText = response.getStatus().getCode() + "|" + response.getBalance();
-				if (SecurityUtil.verifySign(sign, plainText, DefaultTopupClient.PUBLIC_KEY)) {
+				if (SecurityUtil.verifySign(sign, plainText, ((DefaultTopupClient)topupClient).getPublicKey())) {
 					System.out.println(
 							"Du lieu tra ve dang nghi.");
 				}
@@ -151,12 +151,12 @@ public class TopupClientTest {
 		}
 	}
 
-	private static void displayResutlTopupService(TopupTransactionResponse response) throws InvalidKeyException,
+	private static void displayResutlTopupService(TopupTransactionResponse response,TopupClient topupClient) throws InvalidKeyException,
 			NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, IOException {
 		if (response.getStatus().getCode() == 0) {
 			String sign = response.getDataSign();
 			String plainText = response.getStatus().getCode() + "|" + response.getTransactionId();
-			if (SecurityUtil.verifySign(sign, plainText, DefaultTopupClient.PUBLIC_KEY)) {
+			if (SecurityUtil.verifySign(sign, plainText, ((DefaultTopupClient)topupClient).getPublicKey())) {
 				System.out.println(
 						"Du lieu tra ve dang nghi.");
 			}
@@ -172,18 +172,18 @@ public class TopupClientTest {
 
 	}
 
-	private static void displayResustSoftpinService(TopupTransactionResponse response) throws Exception {
+	private static void displayResustSoftpinService(TopupTransactionResponse response,TopupClient topupClient) throws Exception {
 		if (response.getStatus().getCode() == 0) {
 			String sign = response.getDataSign();
 			String plainText = response.getStatus().getCode() + "|" + response.getTransactionId();
-			if (SecurityUtil.verifySign(sign, plainText, DefaultTopupClient.PUBLIC_KEY)) {
+			if (SecurityUtil.verifySign(sign, plainText, ((DefaultTopupClient)topupClient).getPublicKey())) {
 				System.out.println(
 						"Du lieu tra ve dang nghi.");
 			}
 			else{
 				System.out.println("Giao dich thanh cong.Danh sach ma the : ");
 				String encryptedCard = response.getEncryptCards();
-				String listcard = SecurityUtil.decrypt(DefaultTopupClient.API_PASSWORD, encryptedCard);
+				String listcard = SecurityUtil.decrypt(((DefaultTopupClient)topupClient).getApiPassword(), encryptedCard);
 				String[] spiltedCards = listcard.split(";");
 				System.out.println("MA THE \t MENH GIA \t PIN \t SERIAL \t NGAY HET HAN");
 				for(int i = 0; i<spiltedCards.length;i++){
